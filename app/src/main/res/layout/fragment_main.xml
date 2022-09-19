@@ -5,6 +5,14 @@
 
     <data>
 
+        <variable
+            name="viewModel"
+            type="com.cristianboicu.musicbox.viewmodels.MainViewModel" />
+
+        <variable
+            name="currentSong"
+            type="com.cristianboicu.musicbox.data.Song" />
+
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -15,8 +23,8 @@
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/rv_playlist"
             android:layout_width="0dp"
-            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
             android:layout_height="0dp"
+            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
             app:layout_constraintBottom_toTopOf="@id/bottom_player_controller"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
@@ -32,13 +40,24 @@
 
             <TextView
                 android:id="@+id/tv_current_song_title"
-                android:layout_width="match_parent"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:gravity="center"
-                android:text="Current song title"
+                app:setSongTitle="@{currentSong}"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toStartOf="@id/btn_pause_resume"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <androidx.appcompat.widget.AppCompatImageButton
+                android:id="@+id/btn_pause_resume"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:onClick="@{()->viewModel.pauseOrResume()}"
+                android:scaleType="centerCrop"
+                android:src="@drawable/ic_play_music"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
         </androidx.constraintlayout.widget.ConstraintLayout>
 

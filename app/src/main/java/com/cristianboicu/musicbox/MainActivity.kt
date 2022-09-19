@@ -1,24 +1,38 @@
 package com.cristianboicu.musicbox
 
 import android.Manifest
+import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.viewModels
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import com.cristianboicu.musicbox.service.MediaService
 import com.cristianboicu.musicbox.viewmodels.MainViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
+
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
+
+    companion object {
+        const val MEDIA_PERMISSION = 1
+    }
+
     private val viewModel: MainViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         requestPermissions()
+
+        viewModel.mBinder.observe(this) {
+            Log.d("MainActivity", "opa")
+        }
     }
 
     private fun requestPermissions() {
@@ -46,8 +60,29 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    companion object {
-        const val MEDIA_PERMISSION = 1
+    override fun onResume() {
+        super.onResume()
+        startService()
+    }
+
+    override fun onStop() {
+        super.onStop()
+        unbindService(viewModel.serviceConnection)
+    }
+
+    private fun startService() {
+        val serviceIntent = Intent(this, MediaService::class.java)
+//        if (Build.VERSION.SDK_INT >= 26){
+//            startForegroundService(serviceIntent)
+//        } else{
+        startService(serviceIntent)
+//        }
+        bindService()
+    }
+
+    private fun bindService() {
+        val serviceBindIntent = Intent(this, MediaService::class.java)
+        bindService(serviceBindIntent, viewModel.serviceConnection, Context.BIND_AUTO_CREATE)
     }
 
 }

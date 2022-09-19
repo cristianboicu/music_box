@@ -2,13 +2,11 @@ package com.cristianboicu.musicbox.ui
 
 import android.os.Bundle
 import android.util.Log
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.activity.viewModels
-import androidx.fragment.app.viewModels
-import com.cristianboicu.musicbox.R
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import com.cristianboicu.musicbox.adapters.SongPlayClickListener
 import com.cristianboicu.musicbox.adapters.SongsAdapter
 import com.cristianboicu.musicbox.data.Song
@@ -18,10 +16,11 @@ import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
 class MainFragment() : Fragment() {
-    companion object{
+    companion object {
         private const val TAG = "MainFragment"
     }
-    private val viewModel: MainViewModel by viewModels()
+
+    private val viewModel: MainViewModel by activityViewModels()
     private lateinit var binding: FragmentMainBinding
     private lateinit var songsAdapter: SongsAdapter
 
@@ -31,23 +30,27 @@ class MainFragment() : Fragment() {
     ): View {
         binding = FragmentMainBinding.inflate(inflater)
 
-
         songsAdapter = SongsAdapter(SongPlayClickListener(::playSong))
         binding.rvPlaylist.adapter = songsAdapter
+        binding.viewModel = viewModel
 
         setUpObservers()
         return binding.root
     }
 
-
-    private fun playSong(song: Song, i: Int) {
-
+    private fun playSong(song: Song, position: Int) {
+        viewModel.playSong(song, position)
     }
 
     private fun setUpObservers() {
-        viewModel.deviceSongs.observe(viewLifecycleOwner){
+        viewModel.deviceSongs.observe(viewLifecycleOwner) {
             songsAdapter.submitList(it)
             Log.d(TAG, "Device songs: $it")
+        }
+
+        viewModel.currentSong.observe(viewLifecycleOwner) {
+            binding.currentSong = it
+            binding.executePendingBindings()
         }
     }
 }
