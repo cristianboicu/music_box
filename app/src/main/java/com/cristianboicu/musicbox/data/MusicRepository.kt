@@ -3,9 +3,11 @@ package com.cristianboicu.musicbox.data
 import android.content.ContentUris
 import android.content.Context
 import android.database.Cursor
+import android.media.MediaMetadataRetriever
 import android.net.Uri
 import android.provider.MediaStore
 import android.util.Log
+
 
 class MusicRepository(private val appContext: Context) {
 
@@ -35,6 +37,7 @@ class MusicRepository(private val appContext: Context) {
             else -> {
                 do {
                     val song = getSongFromCursorImpl(cursor)
+                    Log.d("Repository", song.albumArtUri.toString())
                     songs.add(song)
                 } while (cursor.moveToNext())
             }
@@ -54,7 +57,8 @@ class MusicRepository(private val appContext: Context) {
         val albumId = cursor.getLong(ALBUM_ID)
         val artistId = cursor.getInt(ARTIST_ID)
         val artistName = cursor.getString(ARTIST)
-        val albumArtUri = ContentUris.withAppendedId(albumArtUri, albumId)
+
+        val albumArtUri = returnImageUriIfAvailable(cursor, albumId)
 
         return Song(id,
             title,
@@ -67,6 +71,20 @@ class MusicRepository(private val appContext: Context) {
             artistName,
             albumArtUri)
 
+    }
+
+    private fun returnImageUriIfAvailable(cursor: Cursor, albumId: Long): Uri? {
+        val metadata: Int = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DATA)
+        val pathId: String = cursor.getString(metadata)
+        val retriever = MediaMetadataRetriever()
+        retriever.setDataSource(pathId)
+        val cover = retriever.embeddedPicture
+
+        return if (cover == null) {
+            null
+        } else {
+            ContentUris.withAppendedId(albumArtUri, albumId)
+        }
     }
 
     companion object {

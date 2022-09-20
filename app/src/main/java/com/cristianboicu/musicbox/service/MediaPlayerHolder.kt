@@ -7,20 +7,17 @@ import android.net.Uri
 import android.os.PowerManager
 import android.util.Log
 import com.cristianboicu.musicbox.data.Song
-import com.cristianboicu.musicbox.viewmodels.MainViewModel
 
-class MediaPlayerHolder(private val mediaService: MediaService): MediaPlayer.OnPreparedListener {
+class MediaPlayerHolder(private val mediaService: MediaService) : IMediaPlayerHolder,
+    MediaPlayer.OnPreparedListener {
 
     private val mediaPlayer: MediaPlayer = MediaPlayer()
 
-    private val deviceSongs = mutableListOf<Song>()
+    private var deviceSongs = mutableListOf<Song>()
     private var currentSong: Song? = null
+    private var currentSongPosition: Int? = null
 
-    fun setCurrentSong(song: Song){
-        currentSong = song
-    }
-
-    fun initMediaPlayer() {
+    override fun initMediaPlayer() {
         Log.d("MainViewModel.TAG", "Init media player")
         mediaPlayer.apply {
             setAudioAttributes(
@@ -32,10 +29,9 @@ class MediaPlayerHolder(private val mediaService: MediaService): MediaPlayer.OnP
             setWakeMode(mediaService, PowerManager.PARTIAL_WAKE_LOCK)
         }
         mediaPlayer.setOnPreparedListener(this)
-
     }
 
-    fun mySetDataSource() {
+    private fun mySetDataSource() {
         Log.d("MainViewModel.TAG", "set data source")
         val contentUri: Uri =
             ContentUris.withAppendedId(android.provider.MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
@@ -51,22 +47,40 @@ class MediaPlayerHolder(private val mediaService: MediaService): MediaPlayer.OnP
         mp?.start()
     }
 
-    private fun pause(){
-            mediaPlayer.pause()
+    override fun setCurrentSong(song: Song) {
+        currentSong = song
+        mySetDataSource()
     }
 
-    private fun resume(){
+    override fun setCurrentSongPosition(position: Int) {
+        currentSongPosition = position
+    }
+
+    override fun setDeviceSongs(songs: MutableList<Song>) {
+        deviceSongs = songs
+    }
+
+    private fun pause() {
+        mediaPlayer.pause()
+    }
+
+    private fun resume() {
         mediaPlayer.start()
     }
 
-    fun pauseOrResume(){
-        if (mediaPlayer.isPlaying){
+    override fun pauseOrResume() {
+        if (mediaPlayer.isPlaying) {
             pause()
-        } else{
+        } else {
             resume()
         }
     }
 
+    override fun skipNext() {
+    }
+
+    override fun skipPrevious() {
+    }
 
 
 }

@@ -9,6 +9,8 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.cristianboicu.musicbox.data.MusicRepository
 import com.cristianboicu.musicbox.data.Song
+import com.cristianboicu.musicbox.other.Event
+import com.cristianboicu.musicbox.service.IMediaPlayerHolder
 import com.cristianboicu.musicbox.service.MediaService
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
@@ -19,11 +21,12 @@ import javax.inject.Inject
 class MainViewModel @Inject constructor(
     private val musicRepository: MusicRepository,
 ) : ViewModel() {
+
     companion object {
         private const val TAG = "MainViewModel"
     }
 
-    private var _mediaService: MediaService? = null
+    private var _mediaPlayerHolder: IMediaPlayerHolder? = null
 
     private val _mBinder: MutableLiveData<MediaService.MyBinder?> =
         MutableLiveData<MediaService.MyBinder?>()
@@ -34,7 +37,8 @@ class MainViewModel @Inject constructor(
             Log.d(TAG, "ServiceConnection: connected to service.")
             val binder: MediaService.MyBinder = iBinder as MediaService.MyBinder
             _mBinder.postValue(binder)
-            _mediaService = binder.service
+            _mediaPlayerHolder = binder.service.mediaPlayerHolder
+            _mediaPlayerHolder?.initMediaPlayer()
         }
 
         override fun onServiceDisconnected(arg0: ComponentName) {
@@ -51,6 +55,9 @@ class MainViewModel @Inject constructor(
     private val _currentSong = MutableLiveData<Song>()
     val currentSong = _currentSong
 
+    private val _openSongFragment = MutableLiveData<Event<Unit>>()
+    val openSongFragment = _openSongFragment
+
     init {
         _deviceSongs.value = musicRepository.searchDeviceSongs()
         if (currentSong.value == null) {
@@ -60,13 +67,24 @@ class MainViewModel @Inject constructor(
 
     fun playSong(song: Song, position: Int) {
         _currentSong.postValue(song)
-        _mediaService?.mediaPlayerHolder?.initMediaPlayer()
-        _mediaService?.mediaPlayerHolder?.setCurrentSong(song)
-        _mediaService?.mediaPlayerHolder?.mySetDataSource()
+        _mediaPlayerHolder?.setCurrentSong(song)
+        _mediaPlayerHolder?.setCurrentSongPosition(position)
     }
 
     fun pauseOrResume() {
-        _mediaService?.mediaPlayerHolder?.pauseOrResume()
+        _mediaPlayerHolder?.pauseOrResume()
+    }
+
+    fun next() {
+        _mediaPlayerHolder?.skipNext()
+    }
+
+    fun previous() {
+        _mediaPlayerHolder?.skipPrevious()
+    }
+
+    fun openSongFragment() {
+        _openSongFragment.value = Event(Unit)
     }
 
 }

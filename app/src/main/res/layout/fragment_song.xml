@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <data>
+
+        <variable
+            name="currentSong"
+            type="com.cristianboicu.musicbox.data.Song" />
+
+        <variable
+            name="viewModel"
+            type="com.cristianboicu.musicbox.viewmodels.MainViewModel" />
+    </data>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".ui.SongFragment">
+
+        <ImageButton
+            android:id="@+id/btn_close_song_fragment"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            app:layout_constraintStart_toStartOf="@+id/iv_song_album_art"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/textView"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:text="@string/playing_song"
+            app:layout_constraintBottom_toBottomOf="@id/btn_close_song_fragment"
+            app:layout_constraintEnd_toEndOf="@+id/iv_song_album_art"
+            app:layout_constraintStart_toStartOf="@+id/iv_song_album_art"
+            app:layout_constraintTop_toTopOf="@id/btn_close_song_fragment" />
+
+        <ImageView
+            android:id="@+id/iv_song_album_art"
+            android:layout_width="350dp"
+            android:layout_height="350dp"
+            app:layout_constraintBottom_toTopOf="@+id/guideline2"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/btn_close_song_fragment"
+            app:setSongAlbumCoverArt="@{currentSong}"
+            tools:src="@drawable/default_cover_art" />
+
+        <androidx.constraintlayout.widget.Guideline
+            android:id="@+id/guideline2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            app:layout_constraintGuide_percent="0.65" />
+
+        <androidx.constraintlayout.widget.Guideline
+            android:id="@+id/guideline3"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            app:layout_constraintGuide_percent="0.70" />
+
+        <TextView
+            android:id="@+id/tv_current_song_title"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            app:setSongTitle="@{currentSong}"
+            android:textSize="22sp"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toEndOf="@+id/iv_song_album_art"
+            app:layout_constraintStart_toStartOf="@+id/iv_song_album_art"
+            app:layout_constraintTop_toTopOf="@+id/guideline3"
+            tools:text="Help me lose my mind" />
+
+        <TextView
+            android:id="@+id/tv_current_song_artist"
+            android:layout_width="0dp"
+            app:setSongArtist="@{currentSong}"
+            android:layout_height="wrap_content"
+            app:layout_constraintEnd_toEndOf="@+id/iv_song_album_art"
+            app:layout_constraintStart_toStartOf="@+id/iv_song_album_art"
+            app:layout_constraintTop_toBottomOf="@id/tv_current_song_title"
+            tools:text="Disclosure" />
+
+        <com.google.android.material.progressindicator.LinearProgressIndicator
+            android:id="@+id/lpi_song"
+            android:layout_width="0dp"
+            android:layout_height="2dp"
+            android:layout_marginTop="8dp"
+            android:progress="50"
+            android:progressTint="@color/black"
+            app:layout_constraintEnd_toEndOf="@+id/iv_song_album_art"
+            app:layout_constraintStart_toStartOf="@+id/iv_song_album_art"
+            app:layout_constraintTop_toBottomOf="@+id/tv_current_song_artist"
+            app:trackThickness="3dp" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</layout>

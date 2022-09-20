@@ -7,12 +7,15 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.navigation.fragment.findNavController
 import com.cristianboicu.musicbox.adapters.SongPlayClickListener
 import com.cristianboicu.musicbox.adapters.SongsAdapter
 import com.cristianboicu.musicbox.data.Song
 import com.cristianboicu.musicbox.databinding.FragmentMainBinding
+import com.cristianboicu.musicbox.other.EventObserver
 import com.cristianboicu.musicbox.viewmodels.MainViewModel
 import dagger.hilt.android.AndroidEntryPoint
+import java.util.*
 
 @AndroidEntryPoint
 class MainFragment() : Fragment() {
@@ -52,6 +55,11 @@ class MainFragment() : Fragment() {
             binding.currentSong = it
             binding.executePendingBindings()
         }
+
+        viewModel.openSongFragment.observe(viewLifecycleOwner, EventObserver {
+            this.findNavController(
+            ).navigate(MainFragmentDirections.openSongFragment())
+        })
     }
 }
 

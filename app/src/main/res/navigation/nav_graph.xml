@@ -9,5 +9,14 @@
         android:id="@+id/mainFragment"
         android:name="com.cristianboicu.musicbox.ui.MainFragment"
         android:label="fragment_main"
-        tools:layout="@layout/fragment_main" />
+        tools:layout="@layout/fragment_main" >
+        <action
+            android:id="@+id/openSongFragment"
+            app:destination="@id/songFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/songFragment"
+        android:name="com.cristianboicu.musicbox.ui.SongFragment"
+        android:label="fragment_song"
+        tools:layout="@layout/fragment_song" />
 </navigation>
