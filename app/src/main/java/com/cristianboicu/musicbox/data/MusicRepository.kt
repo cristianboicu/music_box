@@ -8,7 +8,6 @@ import android.net.Uri
 import android.provider.MediaStore
 import android.util.Log
 
-
 class MusicRepository(private val appContext: Context) {
 
     fun searchDeviceSongs(): List<Song> {

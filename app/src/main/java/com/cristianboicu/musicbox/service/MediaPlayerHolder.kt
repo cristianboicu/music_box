@@ -7,17 +7,21 @@ import android.net.Uri
 import android.os.PowerManager
 import android.util.Log
 import com.cristianboicu.musicbox.data.Song
+import com.cristianboicu.musicbox.interfaces.IMediaPlayerObserver
+import com.cristianboicu.musicbox.viewmodels.MainViewModel
 
 class MediaPlayerHolder(private val mediaService: MediaService) : IMediaPlayerHolder,
     MediaPlayer.OnPreparedListener {
 
     private val mediaPlayer: MediaPlayer = MediaPlayer()
+    private lateinit var mediaPlayerObserver: IMediaPlayerObserver
 
     private var deviceSongs = mutableListOf<Song>()
     private var currentSong: Song? = null
-    private var currentSongPosition: Int? = null
+    private var currentSongPosition: Int = -1
 
-    override fun initMediaPlayer() {
+    override fun initMediaPlayer(mediaPlayerObserver: IMediaPlayerObserver) {
+        this.mediaPlayerObserver = mediaPlayerObserver
         Log.d("MainViewModel.TAG", "Init media player")
         mediaPlayer.apply {
             setAudioAttributes(
@@ -53,7 +57,14 @@ class MediaPlayerHolder(private val mediaService: MediaService) : IMediaPlayerHo
     }
 
     override fun setCurrentSongPosition(position: Int) {
+
         currentSongPosition = position
+        Log.d("TAG serve", currentSongPosition.toString())
+
+    }
+
+    override fun isPlaying(): Boolean {
+        return mediaPlayer.isPlaying
     }
 
     override fun setDeviceSongs(songs: MutableList<Song>) {
@@ -76,10 +87,28 @@ class MediaPlayerHolder(private val mediaService: MediaService) : IMediaPlayerHo
         }
     }
 
+    private fun updateCurrentSong(){
+        currentSong = deviceSongs[currentSongPosition]
+        currentSong?.let {
+            mediaPlayerObserver.onCurrentSongChanged(it)
+        }
+    }
     override fun skipNext() {
+        if (currentSongPosition != -1 && currentSongPosition < deviceSongs.size){
+            currentSongPosition++
+            updateCurrentSong()
+            mySetDataSource()
+        }
     }
 
     override fun skipPrevious() {
+        if (currentSongPosition != -1 && currentSongPosition > 0 && mediaPlayer.currentPosition < 5000){
+            currentSongPosition--
+            updateCurrentSong()
+            mySetDataSource()
+        } else if (mediaPlayer.currentPosition >= 5000){
+            mediaPlayer.seekTo(0)
+        }
     }
 
 

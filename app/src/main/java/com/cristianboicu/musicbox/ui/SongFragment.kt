@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import com.cristianboicu.musicbox.databinding.FragmentSongBinding
+import com.cristianboicu.musicbox.other.setPlayerState
 import com.cristianboicu.musicbox.viewmodels.MainViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -21,9 +22,21 @@ class SongFragment : Fragment() {
         savedInstanceState: Bundle?,
     ): View {
         binding = FragmentSongBinding.inflate(inflater)
+        binding.lifecycleOwner = this
+        binding.viewModel = viewModel
         binding.currentSong = viewModel.currentSong.value
 
+        setUpObservers()
+
+
         return binding.root
+    }
+
+    private fun setUpObservers() {
+        viewModel.currentSong.observe(viewLifecycleOwner) {
+            binding.currentSong = it
+            binding.executePendingBindings()
+        }
     }
 
 }

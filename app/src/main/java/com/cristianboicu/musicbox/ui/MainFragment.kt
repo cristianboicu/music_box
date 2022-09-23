@@ -32,6 +32,7 @@ class MainFragment() : Fragment() {
         savedInstanceState: Bundle?,
     ): View {
         binding = FragmentMainBinding.inflate(inflater)
+        binding.lifecycleOwner = this
 
         songsAdapter = SongsAdapter(SongPlayClickListener(::playSong))
         binding.rvPlaylist.adapter = songsAdapter
@@ -60,6 +61,10 @@ class MainFragment() : Fragment() {
             this.findNavController(
             ).navigate(MainFragmentDirections.openSongFragment())
         })
+//
+//        viewModel.playerState.observe(viewLifecycleOwner){
+//            binding.executePendingBindings()
+//        }
     }
 }
 
