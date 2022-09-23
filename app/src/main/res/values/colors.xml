@@ -14,7 +14,7 @@
     <color name="primary">#FFFFFF</color>
     <color name="primaryDark">#EBE9E9</color>
     <color name="onPrimary">#000000</color>
-    <color name="accent">#000000</color>
+    <color name="accent">#EA4D63</color>
 
     <color name="secondary">#FF03DAC5</color>
     <color name="onSecondary">#FF03DAC5</color>

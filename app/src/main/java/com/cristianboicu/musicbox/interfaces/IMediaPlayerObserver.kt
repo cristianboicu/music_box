@@ -6,5 +6,6 @@ interface IMediaPlayerObserver {
 
     fun onCurrentSongChanged(song: Song)
 
-    fun onCurrentSongProgressChanged()
+    fun onCurrentSongProgressChanged(position: Int)
+
 }

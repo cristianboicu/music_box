@@ -14,6 +14,8 @@ interface IMediaPlayerHolder {
 
     fun setCurrentSongPosition(position: Int)
 
+    fun setPlaybackProgress(progress: Int)
+
     fun isPlaying(): Boolean
 
     fun pauseOrResume()

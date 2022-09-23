@@ -8,12 +8,11 @@ import android.os.PowerManager
 import android.util.Log
 import com.cristianboicu.musicbox.data.Song
 import com.cristianboicu.musicbox.interfaces.IMediaPlayerObserver
-import com.cristianboicu.musicbox.viewmodels.MainViewModel
 
 class MediaPlayerHolder(private val mediaService: MediaService) : IMediaPlayerHolder,
     MediaPlayer.OnPreparedListener {
 
-    private val mediaPlayer: MediaPlayer = MediaPlayer()
+    private final val mediaPlayer: MediaPlayer = MediaPlayer()
     private lateinit var mediaPlayerObserver: IMediaPlayerObserver
 
     private var deviceSongs = mutableListOf<Song>()
@@ -49,6 +48,7 @@ class MediaPlayerHolder(private val mediaService: MediaService) : IMediaPlayerHo
 
     override fun onPrepared(mp: MediaPlayer?) {
         mp?.start()
+        updateProgress()
     }
 
     override fun setCurrentSong(song: Song) {
@@ -57,11 +57,10 @@ class MediaPlayerHolder(private val mediaService: MediaService) : IMediaPlayerHo
     }
 
     override fun setCurrentSongPosition(position: Int) {
-
         currentSongPosition = position
         Log.d("TAG serve", currentSongPosition.toString())
-
     }
+
 
     override fun isPlaying(): Boolean {
         return mediaPlayer.isPlaying
@@ -77,6 +76,7 @@ class MediaPlayerHolder(private val mediaService: MediaService) : IMediaPlayerHo
 
     private fun resume() {
         mediaPlayer.start()
+        updateProgress()
     }
 
     override fun pauseOrResume() {
@@ -87,14 +87,15 @@ class MediaPlayerHolder(private val mediaService: MediaService) : IMediaPlayerHo
         }
     }
 
-    private fun updateCurrentSong(){
+    private fun updateCurrentSong() {
         currentSong = deviceSongs[currentSongPosition]
         currentSong?.let {
             mediaPlayerObserver.onCurrentSongChanged(it)
         }
     }
+
     override fun skipNext() {
-        if (currentSongPosition != -1 && currentSongPosition < deviceSongs.size){
+        if (currentSongPosition != -1 && currentSongPosition < deviceSongs.size) {
             currentSongPosition++
             updateCurrentSong()
             mySetDataSource()
@@ -102,13 +103,30 @@ class MediaPlayerHolder(private val mediaService: MediaService) : IMediaPlayerHo
     }
 
     override fun skipPrevious() {
-        if (currentSongPosition != -1 && currentSongPosition > 0 && mediaPlayer.currentPosition < 5000){
+        if (currentSongPosition != -1 && currentSongPosition > 0 && mediaPlayer.currentPosition < 5000) {
             currentSongPosition--
             updateCurrentSong()
             mySetDataSource()
-        } else if (mediaPlayer.currentPosition >= 5000){
+        } else if (mediaPlayer.currentPosition >= 5000) {
             mediaPlayer.seekTo(0)
         }
+    }
+
+    override fun setPlaybackProgress(progress: Int) {
+        mediaPlayer.seekTo(progress)
+    }
+
+    private fun updateProgress() {
+        Thread {
+            while (mediaPlayer.isPlaying)
+                try {
+                    Log.d("Service", mediaPlayer.currentPosition.toString())
+                    mediaPlayerObserver.onCurrentSongProgressChanged(mediaPlayer.currentPosition)
+                    Thread.sleep(200)
+                } catch (e: Exception) {
+                    mediaPlayer.seekTo(0)
+                }
+        }.start()
     }
 
 

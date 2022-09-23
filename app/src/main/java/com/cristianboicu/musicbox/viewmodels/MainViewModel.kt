@@ -66,6 +66,9 @@ class MainViewModel @Inject constructor(
     private val _openSongFragment = MutableLiveData<Event<Unit>>()
     val openSongFragment = _openSongFragment
 
+    private val _playbackProgress = MutableLiveData(0)
+    val playbackProgress = _playbackProgress
+
     init {
         _deviceSongs.value = musicRepository.searchDeviceSongs()
         if (currentSong.value == null) {
@@ -99,6 +102,10 @@ class MainViewModel @Inject constructor(
         _mediaPlayerHolder?.skipPrevious()
     }
 
+    fun updatePlaybackPosition(position: Int) {
+        _mediaPlayerHolder?.setPlaybackProgress(position)
+    }
+
     fun openSongFragment() {
         _openSongFragment.value = Event(Unit)
     }
@@ -112,6 +119,7 @@ class MainViewModel @Inject constructor(
         _currentSong.value = song
     }
 
-    override fun onCurrentSongProgressChanged() {
+    override fun onCurrentSongProgressChanged(position: Int) {
+        _playbackProgress.postValue(position)
     }
 }
