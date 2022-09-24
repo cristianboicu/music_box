@@ -12,6 +12,7 @@ import com.cristianboicu.musicbox.data.Song
 import com.cristianboicu.musicbox.interfaces.IMediaPlayerObserver
 import com.cristianboicu.musicbox.other.Event
 import com.cristianboicu.musicbox.service.IMediaPlayerHolder
+import com.cristianboicu.musicbox.service.MediaPlayerHolder
 import com.cristianboicu.musicbox.service.MediaService
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
@@ -26,9 +27,6 @@ class MainViewModel @Inject constructor(
     companion object {
         private const val TAG = "MainViewModel"
     }
-
-    private val _playerState = MutableLiveData(PlayerState.PAUSED)
-    val playerState = _playerState
 
     private var _mediaPlayerHolder: IMediaPlayerHolder? = null
 
@@ -55,6 +53,9 @@ class MainViewModel @Inject constructor(
         }
     }
 
+    private val _playerState = MutableLiveData(MediaPlayerHolder.PlayerState.PAUSED)
+    val playerState = _playerState
+
     val serviceConnection = _serviceConnection
 
     private val _deviceSongs = MutableLiveData<List<Song>>()
@@ -77,21 +78,15 @@ class MainViewModel @Inject constructor(
     }
 
     fun playSong(song: Song, position: Int) {
-        Log.d("TAG serv", position.toString())
+        Log.d(TAG, position.toString())
 
         _currentSong.postValue(song)
         _mediaPlayerHolder?.setCurrentSong(song)
         _mediaPlayerHolder?.setCurrentSongPosition(position)
-        _playerState.value = PlayerState.RESUMED
     }
 
     fun pauseOrResume() {
         _mediaPlayerHolder?.pauseOrResume()
-        when (_mediaPlayerHolder?.isPlaying()) {
-            true -> _playerState.value = PlayerState.RESUMED
-            false -> _playerState.value = PlayerState.PAUSED
-            else -> {}
-        }
     }
 
     fun next() {
@@ -110,9 +105,8 @@ class MainViewModel @Inject constructor(
         _openSongFragment.value = Event(Unit)
     }
 
-    enum class PlayerState {
-        RESUMED,
-        PAUSED
+    override fun onPlayerStateChanged(state: MediaPlayerHolder.PlayerState) {
+        _playerState.value = state
     }
 
     override fun onCurrentSongChanged(song: Song) {

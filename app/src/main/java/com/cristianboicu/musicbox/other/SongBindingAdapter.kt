@@ -6,7 +6,7 @@ import androidx.databinding.BindingAdapter
 import coil.load
 import com.cristianboicu.musicbox.R
 import com.cristianboicu.musicbox.data.Song
-import com.cristianboicu.musicbox.viewmodels.MainViewModel
+import com.cristianboicu.musicbox.service.MediaPlayerHolder
 
 @BindingAdapter("setSongTitle")
 fun TextView.setSongTitle(song: Song?) {
@@ -28,13 +28,14 @@ fun ImageView.setSongAlbumCoverArt(song: Song?) {
 }
 
 @BindingAdapter("setPlayerState")
-fun ImageView.setPlayerState(playerState: MainViewModel.PlayerState) {
+fun ImageView.setPlayerState(playerState: MediaPlayerHolder.PlayerState) {
     when (playerState) {
-        MainViewModel.PlayerState.PAUSED -> {
+        MediaPlayerHolder.PlayerState.PAUSED -> {
             this.isSelected = false
         }
-        MainViewModel.PlayerState.RESUMED -> {
+        MediaPlayerHolder.PlayerState.STARTED -> {
             this.isSelected = true
         }
+        else -> {}
     }
 }

@@ -12,7 +12,10 @@ import com.cristianboicu.musicbox.interfaces.IMediaPlayerObserver
 class MediaPlayerHolder(private val mediaService: MediaService) : IMediaPlayerHolder,
     MediaPlayer.OnPreparedListener {
 
+    private final val TAG: String = "MediaPlayerHolder"
+
     private final val mediaPlayer: MediaPlayer = MediaPlayer()
+    private var mediaPlayerState = PlayerState.IDLE
     private lateinit var mediaPlayerObserver: IMediaPlayerObserver
 
     private var deviceSongs = mutableListOf<Song>()
@@ -20,8 +23,9 @@ class MediaPlayerHolder(private val mediaService: MediaService) : IMediaPlayerHo
     private var currentSongPosition: Int = -1
 
     override fun initMediaPlayer(mediaPlayerObserver: IMediaPlayerObserver) {
+        Log.d(TAG, "Init media player")
+
         this.mediaPlayerObserver = mediaPlayerObserver
-        Log.d("MainViewModel.TAG", "Init media player")
         mediaPlayer.apply {
             setAudioAttributes(
                 AudioAttributes.Builder()
@@ -35,20 +39,22 @@ class MediaPlayerHolder(private val mediaService: MediaService) : IMediaPlayerHo
     }
 
     private fun mySetDataSource() {
-        Log.d("MainViewModel.TAG", "set data source")
         val contentUri: Uri =
             ContentUris.withAppendedId(android.provider.MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
                 currentSong!!.id)
         mediaPlayer.apply {
             reset()
             setDataSource(mediaService, contentUri)
+            updatePlayerState(PlayerState.INITIALIZED)
             prepareAsync()
         }
     }
 
     override fun onPrepared(mp: MediaPlayer?) {
+        updatePlayerState(PlayerState.PREPARED)
         mp?.start()
         updateProgress()
+        updatePlayerState(PlayerState.STARTED)
     }
 
     override fun setCurrentSong(song: Song) {
@@ -58,9 +64,7 @@ class MediaPlayerHolder(private val mediaService: MediaService) : IMediaPlayerHo
 
     override fun setCurrentSongPosition(position: Int) {
         currentSongPosition = position
-        Log.d("TAG serve", currentSongPosition.toString())
     }
-
 
     override fun isPlaying(): Boolean {
         return mediaPlayer.isPlaying
@@ -72,17 +76,19 @@ class MediaPlayerHolder(private val mediaService: MediaService) : IMediaPlayerHo
 
     private fun pause() {
         mediaPlayer.pause()
+        updatePlayerState(PlayerState.PAUSED)
     }
 
     private fun resume() {
         mediaPlayer.start()
         updateProgress()
+        updatePlayerState(PlayerState.STARTED)
     }
 
     override fun pauseOrResume() {
-        if (mediaPlayer.isPlaying) {
+        if (mediaPlayerState == PlayerState.STARTED && mediaPlayer.isPlaying) {
             pause()
-        } else {
+        } else if (mediaPlayerState == PlayerState.PAUSED && !mediaPlayer.isPlaying) {
             resume()
         }
     }
@@ -95,7 +101,7 @@ class MediaPlayerHolder(private val mediaService: MediaService) : IMediaPlayerHo
     }
 
     override fun skipNext() {
-        if (currentSongPosition != -1 && currentSongPosition < deviceSongs.size) {
+        if (currentSongPosition != -1 && currentSongPosition + 1 < deviceSongs.size) {
             currentSongPosition++
             updateCurrentSong()
             mySetDataSource()
@@ -109,6 +115,7 @@ class MediaPlayerHolder(private val mediaService: MediaService) : IMediaPlayerHo
             mySetDataSource()
         } else if (mediaPlayer.currentPosition >= 5000) {
             mediaPlayer.seekTo(0)
+            mediaPlayerObserver.onCurrentSongProgressChanged(mediaPlayer.currentPosition)
         }
     }
 
@@ -120,7 +127,6 @@ class MediaPlayerHolder(private val mediaService: MediaService) : IMediaPlayerHo
         Thread {
             while (mediaPlayer.isPlaying)
                 try {
-                    Log.d("Service", mediaPlayer.currentPosition.toString())
                     mediaPlayerObserver.onCurrentSongProgressChanged(mediaPlayer.currentPosition)
                     Thread.sleep(200)
                 } catch (e: Exception) {
@@ -129,5 +135,21 @@ class MediaPlayerHolder(private val mediaService: MediaService) : IMediaPlayerHo
         }.start()
     }
 
+    private fun updatePlayerState(state: PlayerState) {
+        mediaPlayerState = state
+        Log.d(TAG, mediaPlayerState.toString())
+        if (state == PlayerState.PAUSED || state == PlayerState.STARTED){
+            mediaPlayerObserver.onPlayerStateChanged(state)
+        }
+    }
+
+    enum class PlayerState {
+        IDLE,
+        INITIALIZED,
+        PREPARED,
+        STARTED,
+        PAUSED,
+        STOPPED
+    }
 
 }
