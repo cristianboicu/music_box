@@ -33,13 +33,15 @@ android {
         jvmTarget = '1.8'
     }
 
-    buildFeatures{
+    buildFeatures {
         dataBinding true
         viewBinding true
     }
 }
 
 dependencies {
+    //Notification
+    implementation "androidx.media:media:1.6.0"
 
     // Hilt
     implementation("com.google.dagger:hilt-android:2.43.2")

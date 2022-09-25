@@ -12,30 +12,31 @@ import com.cristianboicu.musicbox.interfaces.IMediaPlayerObserver
 class MediaPlayerHolder(private val mediaService: MediaService) : IMediaPlayerHolder,
     MediaPlayer.OnPreparedListener {
 
-    private final val TAG: String = "MediaPlayerHolder"
+    private val TAG: String = "MediaPlayerHolder"
 
     private final val mediaPlayer: MediaPlayer = MediaPlayer()
     private var mediaPlayerState = PlayerState.IDLE
-    private lateinit var mediaPlayerObserver: IMediaPlayerObserver
+    private var mediaPlayerListeners = mutableListOf<Pair<String, IMediaPlayerObserver>>()
 
     private var deviceSongs = mutableListOf<Song>()
     private var currentSong: Song? = null
+
     private var currentSongPosition: Int = -1
 
-    override fun initMediaPlayer(mediaPlayerObserver: IMediaPlayerObserver) {
-        Log.d(TAG, "Init media player")
-
-        this.mediaPlayerObserver = mediaPlayerObserver
-        mediaPlayer.apply {
-            setAudioAttributes(
-                AudioAttributes.Builder()
-                    .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
-                    .setUsage(AudioAttributes.USAGE_MEDIA)
-                    .build()
-            )
-            setWakeMode(mediaService, PowerManager.PARTIAL_WAKE_LOCK)
+    override fun initMediaPlayer() {
+        if (mediaPlayerState == PlayerState.IDLE) {
+            Log.d(TAG, "Init media player")
+            mediaPlayer.apply {
+                setAudioAttributes(
+                    AudioAttributes.Builder()
+                        .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+                        .setUsage(AudioAttributes.USAGE_MEDIA)
+                        .build()
+                )
+                setWakeMode(mediaService, PowerManager.PARTIAL_WAKE_LOCK)
+            }
+            mediaPlayer.setOnPreparedListener(this)
         }
-        mediaPlayer.setOnPreparedListener(this)
     }
 
     private fun mySetDataSource() {
@@ -59,7 +60,10 @@ class MediaPlayerHolder(private val mediaService: MediaService) : IMediaPlayerHo
 
     override fun setCurrentSong(song: Song) {
         currentSong = song
-        mySetDataSource()
+        currentSong?.let {
+            notifyListenersCurrentSongChanged(it)
+            mySetDataSource()
+        }
     }
 
     override fun setCurrentSongPosition(position: Int) {
@@ -96,7 +100,7 @@ class MediaPlayerHolder(private val mediaService: MediaService) : IMediaPlayerHo
     private fun updateCurrentSong() {
         currentSong = deviceSongs[currentSongPosition]
         currentSong?.let {
-            mediaPlayerObserver.onCurrentSongChanged(it)
+            notifyListenersCurrentSongChanged(it)
         }
     }
 
@@ -115,7 +119,35 @@ class MediaPlayerHolder(private val mediaService: MediaService) : IMediaPlayerHo
             mySetDataSource()
         } else if (mediaPlayer.currentPosition >= 5000) {
             mediaPlayer.seekTo(0)
-            mediaPlayerObserver.onCurrentSongProgressChanged(mediaPlayer.currentPosition)
+            notifyListenersProgressChanged(mediaPlayer.currentPosition)
+        }
+    }
+
+    override fun registerObserver(id: String, listener: IMediaPlayerObserver) {
+        mediaPlayerListeners.add(Pair(id, listener))
+    }
+
+    override fun removeObserver(id: String) {
+        mediaPlayerListeners.removeIf {
+            it.first == id
+        }
+    }
+
+    private fun notifyListenersCurrentSongChanged(song: Song) {
+        mediaPlayerListeners.forEach {
+            it.second.onCurrentSongChanged(song)
+        }
+    }
+
+    private fun notifyListenersProgressChanged(progress: Int) {
+        mediaPlayerListeners.forEach {
+            it.second.onCurrentSongProgressChanged(progress)
+        }
+    }
+
+    private fun notifyListenersPlayerStateChanged(state: PlayerState) {
+        mediaPlayerListeners.forEach {
+            it.second.onPlayerStateChanged(state)
         }
     }
 
@@ -127,7 +159,7 @@ class MediaPlayerHolder(private val mediaService: MediaService) : IMediaPlayerHo
         Thread {
             while (mediaPlayer.isPlaying)
                 try {
-                    mediaPlayerObserver.onCurrentSongProgressChanged(mediaPlayer.currentPosition)
+                    notifyListenersProgressChanged(mediaPlayer.currentPosition)
                     Thread.sleep(200)
                 } catch (e: Exception) {
                     mediaPlayer.seekTo(0)
@@ -138,8 +170,8 @@ class MediaPlayerHolder(private val mediaService: MediaService) : IMediaPlayerHo
     private fun updatePlayerState(state: PlayerState) {
         mediaPlayerState = state
         Log.d(TAG, mediaPlayerState.toString())
-        if (state == PlayerState.PAUSED || state == PlayerState.STARTED){
-            mediaPlayerObserver.onPlayerStateChanged(state)
+        if (state == PlayerState.PAUSED || state == PlayerState.STARTED) {
+            notifyListenersPlayerStateChanged(state)
         }
     }
 

@@ -29,10 +29,6 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         requestPermissions()
-
-        viewModel.mBinder.observe(this) {
-            Log.d("MainActivity", "opa")
-        }
     }
 
     private fun requestPermissions() {
@@ -72,11 +68,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun startService() {
         val serviceIntent = Intent(this, MediaService::class.java)
-//        if (Build.VERSION.SDK_INT >= 26){
-//            startForegroundService(serviceIntent)
-//        } else{
         startService(serviceIntent)
-//        }
         bindService()
     }
 

@@ -1,5 +1,15 @@
 package com.cristianboicu.musicbox.other
 
+import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.net.Uri
+import android.os.ParcelFileDescriptor
+import com.cristianboicu.musicbox.R
+import java.io.FileDescriptor
+import java.io.IOException
+
+
 object Util {
     fun convertMsToMinutes(ms: Int): String {
         val seconds = ms / 1000
@@ -11,5 +21,21 @@ object Util {
         } else {
             "${minutes}:${remainedSeconds}"
         }
+    }
+
+    fun uriToBitmap(context: Context, selectedFileUri: Uri?): Bitmap? {
+        selectedFileUri?.let {
+            try {
+                val parcelFileDescriptor: ParcelFileDescriptor? =
+                    context.contentResolver.openFileDescriptor(it, "r")
+                val fileDescriptor: FileDescriptor? = parcelFileDescriptor?.fileDescriptor
+                val image = BitmapFactory.decodeFileDescriptor(fileDescriptor)
+                parcelFileDescriptor?.close()
+                return image
+            } catch (e: IOException) {
+                e.printStackTrace()
+            }
+        }
+        return BitmapFactory.decodeResource(context.resources, R.drawable.default_cover_art)
     }
 }

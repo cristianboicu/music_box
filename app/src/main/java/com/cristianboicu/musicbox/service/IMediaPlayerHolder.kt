@@ -2,11 +2,10 @@ package com.cristianboicu.musicbox.service
 
 import com.cristianboicu.musicbox.data.Song
 import com.cristianboicu.musicbox.interfaces.IMediaPlayerObserver
-import com.cristianboicu.musicbox.viewmodels.MainViewModel
 
 interface IMediaPlayerHolder {
 
-    fun initMediaPlayer(mediaPlayerObserver: IMediaPlayerObserver)
+    fun initMediaPlayer()
 
     fun setDeviceSongs(songs: MutableList<Song>)
 
@@ -23,4 +22,8 @@ interface IMediaPlayerHolder {
     fun skipNext()
 
     fun skipPrevious()
+
+    fun registerObserver(id: String, listener: IMediaPlayerObserver)
+
+    fun removeObserver(id: String)
 }
