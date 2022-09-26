@@ -41,7 +41,6 @@ class MainViewModel @Inject constructor(
             _mBinder.postValue(binder)
             _mediaPlayerHolder = binder.service.mediaPlayerHolder
 
-            _mediaPlayerHolder?.initMediaPlayer()
             _mediaPlayerHolder?.registerObserver("mainViewModel", this@MainViewModel)
             deviceSongs.value?.let {
                 _mediaPlayerHolder?.setDeviceSongs(it as MutableList<Song>)

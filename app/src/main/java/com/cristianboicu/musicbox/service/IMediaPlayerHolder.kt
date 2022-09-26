@@ -26,4 +26,8 @@ interface IMediaPlayerHolder {
     fun registerObserver(id: String, listener: IMediaPlayerObserver)
 
     fun removeObserver(id: String)
+
+    fun getCurrentSongProgress(): Int
+
+    fun seekTo(position: Int)
 }

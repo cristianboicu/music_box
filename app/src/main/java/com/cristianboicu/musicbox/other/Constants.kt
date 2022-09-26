@@ -5,4 +5,5 @@ object Constants {
     const val NOTIFICATION_CHANNEL_NAME = "mediaPlayerNotificationChannel"
     const val NOTIFICATION_ID = 1
     const val FOREGROUND_SERVICE_ID = 1
+    const val MEDIA_SERVICE = "mediaService"
 }

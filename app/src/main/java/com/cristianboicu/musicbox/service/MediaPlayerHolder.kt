@@ -8,6 +8,7 @@ import android.os.PowerManager
 import android.util.Log
 import com.cristianboicu.musicbox.data.Song
 import com.cristianboicu.musicbox.interfaces.IMediaPlayerObserver
+import com.cristianboicu.musicbox.other.Constants.MEDIA_SERVICE
 
 class MediaPlayerHolder(private val mediaService: MediaService) : IMediaPlayerHolder,
     MediaPlayer.OnPreparedListener {
@@ -25,7 +26,6 @@ class MediaPlayerHolder(private val mediaService: MediaService) : IMediaPlayerHo
 
     override fun initMediaPlayer() {
         if (mediaPlayerState == PlayerState.IDLE) {
-            Log.d(TAG, "Init media player")
             mediaPlayer.apply {
                 setAudioAttributes(
                     AudioAttributes.Builder()
@@ -133,6 +133,14 @@ class MediaPlayerHolder(private val mediaService: MediaService) : IMediaPlayerHo
         }
     }
 
+    override fun getCurrentSongProgress(): Int {
+        return mediaPlayer.currentPosition
+    }
+
+    override fun seekTo(position: Int) {
+        mediaPlayer.seekTo(position)
+    }
+
     private fun notifyListenersCurrentSongChanged(song: Song) {
         mediaPlayerListeners.forEach {
             it.second.onCurrentSongChanged(song)
@@ -151,16 +159,25 @@ class MediaPlayerHolder(private val mediaService: MediaService) : IMediaPlayerHo
         }
     }
 
+    private fun notifyListenersProgressChangedExceptService(progress: Int) {
+        mediaPlayerListeners.forEach {
+            if (it.first != MEDIA_SERVICE) {
+                it.second.onCurrentSongProgressChanged(progress)
+            }
+        }
+    }
+
     override fun setPlaybackProgress(progress: Int) {
         mediaPlayer.seekTo(progress)
+        notifyListenersProgressChanged(progress)
     }
 
     private fun updateProgress() {
         Thread {
             while (mediaPlayer.isPlaying)
                 try {
-                    notifyListenersProgressChanged(mediaPlayer.currentPosition)
-                    Thread.sleep(200)
+                    notifyListenersProgressChangedExceptService(mediaPlayer.currentPosition)
+                    Thread.sleep(500)
                 } catch (e: Exception) {
                     mediaPlayer.seekTo(0)
                 }
